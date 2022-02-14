@@ -2,9 +2,22 @@ import Head from 'next/head'
 import { FormEvent, useCallback, useState } from 'react'
 import { SearchResults } from '../components/SearchResults';
 
+type Results = {
+  totalPrice: number;
+  data: Array<{
+    id: number;
+    price: number;
+    title: string;
+    priceFormatted: string;
+  }>
+}
+
 export default function Home() {
   const [search, setSearch] = useState('');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<Results>({
+    totalPrice: 0,
+    data: []
+  });
 
   const handleSearch = async (event: FormEvent) => {
     event.preventDefault();
@@ -15,7 +28,33 @@ export default function Home() {
 
     const response = await fetch(`http://localhost:3333/products?q=${search}`)
     const data = await response.json()
-    setResults(data);
+
+    // ---- FORMATAÇÃO DE DADOS ----
+    // Formatar os dados quando busca eles e não na hora de renderizar
+    // Por exemplo: evitar o totalPrice no SearchResults, pois mesmo usando o useMemo
+    // ainda tem um gasto de processamento para comparar
+
+    const formatter = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    })
+
+    const products = data.map(product => {
+      return {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        priceFormatted: formatter.format(product.price),
+      }
+    })
+
+
+    const totalPrice = data.reduce((total, product) => {
+      return total + product.price
+    }, 0);
+
+    setResults({ totalPrice, data: products });
+
   }
 
   const addToWishList = useCallback(async (id:number) => {
@@ -37,7 +76,7 @@ export default function Home() {
           <button type="submit">Pesquisar</button>
         </form>
 
-        <SearchResults results={results} onAddToWishList={addToWishList} />        
+        <SearchResults results={results.data} totalPrice={results.totalPrice} onAddToWishList={addToWishList} />        
       </div>
 
     </div>
