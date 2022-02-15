@@ -1,6 +1,9 @@
 # Melhorando a performance dos app com ReactJS
 Estudos de como melhorar a performance dos app com react, guiado pelo curso Ignite da Rocketseat.
 
+## 🔧 Instalação
+Dentro da pasta performance-react, instale as depedências com o comando: ``yarn install``.
+
 ## 🔧 Executar o projeto
 Executar os comandos: ```yarn dev``` e ```yarn server```
 
